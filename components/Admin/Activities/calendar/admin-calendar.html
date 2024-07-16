@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- CSS for full calendar -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.9.0/fullcalendar.min.css" rel="stylesheet" />
+  <!-- JS for jQuery -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!-- JS for full calendar -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.9.0/fullcalendar.min.js"></script>
+  <!-- Bootstrap CSS and JS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" />
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="header">
+          <div class="custom-container">
+            <button class="custom-button activities-button selected">Activities</button>
+            <button class="custom-button requests-button">Request</button>
+          </div> 
+        </div>
+          
+        <div id="calendar"></div> <!-- Calendar will be populated here -->
+
+        <div class="container-request" style="display: none;">
+          <div class="header-text">
+            <div class="title-text">Student Activities</div>
+            <div class="button-group">
+              <div class="request-button">
+                <i class="bi bi-filter"></i>
+                <div class="request-text">Filters</div>
+              </div>
+              <div class="request-button">
+                <i class="bi bi-cloud-download"></i>
+                <div class="request-text">Export</div>
+              </div>
+              <div class="request-button" style="background: #198754;">
+                <i class="bi bi-folder-plus"></i>
+                <div class="request-text add-event-text">Add Event</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Table section -->
+          <div class="request-table">
+            <div class="header-row">
+              <div class="table-header">Event Title <i class="bi bi-arrow-down"></i></div>
+              <div class="table-header">Organization <i class="bi bi-arrow-down"></i></div>
+              <div class="table-header">Date Submitted <i class="bi bi-arrow-down"></i></div>
+              <div class="table-header">Venue <i class="bi bi-arrow-down"></i></div>
+              <div class="table-header">Target Event Date <i class="bi bi-arrow-down"></i></div>
+              <div class="table-header">Status <i class="bi bi-arrow-down"></i></div>
+            </div>
+           
+            
+          </div>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <script>
+    $(document).ready(function () {
+      var events = [];
+      display_events_calendar(); // Initially display events when page loads
+      display_events_request();
+
+      $(".custom-button").click(function () {
+        $('.custom-button').removeClass('selected'); // Remove the selected class from all buttons
+        $(this).addClass('selected'); // Add the selected class to the clicked button
+    
+        if ($(this).hasClass('activities-button')) {
+          $("#calendar").fadeIn(); // Show calendar when Activities button is clicked
+          $(".container-request").fadeOut(); // Hide the request container
+        } else if ($(this).hasClass('requests-button')) {
+          $("#calendar").fadeOut(); // Hide calendar when Request button is clicked
+          $(".container-request").fadeIn(); // Show the request container
+          display_events_calendar(); // Call function to display events (optional, in case of refresh)
+        }
+      });
+    
+    });
+
+    function display_events_calendar() {
+    var events = [];
+    $.ajax({
+      url: "../components/Admin/Activities/calendar/display_event.php",
+      dataType: "json",
+      success: function (response) {
+        var result = response.data;
+        $.each(result, function (i, item) {
+          events.push({
+            event_id: item.event_id,
+            title: item.title,
+            start: item.start,
+            end: item.end,
+            color: item.color,
+            url: item.url,
+          });
+        });
+        $("#calendar").fullCalendar({
+          defaultView: "month",
+          timeZone: "local",
+          editable: true,
+          height: 700,
+          selectable: false,
+          selectHelper: false,
+          select: function (start, end) {
+            // Optionally handle select event here
+          },
+          events: events,
+          eventRender: function (event, element) {
+            element.bind("click", function () {
+              alert(event.event_id);
+            });
+          },
+        });
+      },
+      error: function (xhr, status) {
+        alert("Error fetching events");
+      },
+    });
+    }
+
+    // Function to display events for request table
+    // Function to display events for request table
+    function display_events_request() {
+      $.ajax({
+          url: "../components/Admin/Activities/calendar/display_event_table.php",
+          dataType: "json",
+          success: function (response) {
+              var result = response.data;
+              var tableContent = ""; // Initialize an empty string to accumulate table rows
+
+              // Build the table rows dynamically
+              $.each(result, function (i, item) {
+                  tableContent += '<div class="data-row">' +
+                      '<div class="table-data">' + item.title + '</div>' +
+                      '<div class="table-data">' + item.organization + '</div>' + // Ensure 'organization' key is used
+                      '<div class="table-data">' + item.created_at + '</div>' +
+                      '<div class="table-data">' + item.venue + '</div>' +
+                      '<div class="table-data">' + item.start_date + '</div>' +
+                      '<div class="table-data">' + item.status + '</div>' +
+                      '<div class="table-data">' +
+                      '<button class="view-btn" data-id="' + item.event_id + '">View</button>' +
+                      '<button class="delete-btn" data-id="' + item.event_id + '">Delete</button>' +
+                      '</div>' +
+                      '</div>';
+              });
+
+              // Ensure header row is displayed
+              var headerRow = '<div class="header-row">' +
+                  '<div class="table-header">Event Title <i class="bi bi-arrow-down"></i></div>' +
+                  '<div class="table-header">Organization <i class="bi bi-arrow-down"></i></div>' +
+                  '<div class="table-header">Date Submitted <i class="bi bi-arrow-down"></i></div>' +
+                  '<div class="table-header">Venue <i class="bi bi-arrow-down"></i></div>' +
+                  '<div class="table-header">Target Event Date <i class="bi bi-arrow-down"></i></div>' +
+                  '<div class="table-header">Status <i class="bi bi-arrow-down"></i></div>' +
+                  '<div class="table-header">Action <i class="bi bi-arrow-down"></i></div>' +
+                  '</div>';
+
+              // Append the header row and all table rows to the request-table
+              $(".request-table").html(headerRow + tableContent);
+
+              // Add click event handlers for the buttons
+              $(".view-btn").on("click", function () {
+                  var eventId = $(this).data("id");
+                  $("#main-content").load("../components/Admin/Activities/calendar/view-events.php?event_id=" + eventId);
+              });
+
+              $(".delete-btn").on("click", function () {
+                  var eventId = $(this).data("id");
+                  if (confirm("Are you sure you want to delete this event?")) {
+                      $.ajax({
+                          url: "../components/Admin/Activities/calendar/delete_events.php",
+                          type: "POST",
+                          data: { event_id: eventId },
+                          dataType: "json",
+                          success: function (response) {
+                              if (response.status === 'success') {
+                                  alert(response.message);
+                                  // Refresh the events table
+                                  display_events_request();
+                              } else {
+                                  alert("Error: " + response.message);
+                              }
+                          },
+                          error: function (xhr, status, error) {
+                              console.error("Error deleting event:", status, error);
+                              alert("Error deleting event: " + error); // Display more informative error message
+                          }
+                      });
+                  }
+              });
+          },
+          error: function (xhr, status, error) {
+              console.error("Error fetching events for request table:", status, error);
+              alert("Error fetching events for request table: " + error); // Display more informative error message
+          },
+      });
+    }
+
+
+      
+
+
+
+
+
+
+
+
+
+  </script>
+
+  <style>
+    .fc-view-container {
+      box-shadow: 5px 5px 8px #b5b5b5;
+    }
+  
+    .fc-head-container .fc-widget-header {
+      height: 35px;
+    }
+  
+    .fc th {
+      vertical-align: middle;
+    }
+  
+    .fc-ltr .fc-basic-view .fc-day-top .fc-day-number {
+      float: left;
+    }
+  
+    .fc td,
+    .fc th {
+      padding: 3px 3px 0px 3px;
+    }
+  
+    .fc-unthemed td.fc-today {
+      background: none;
+    }
+  
+    .fc-today > span.fc-day-number {
+      display: flex;
+      height: 1.2rem;
+      width: 1.2rem;
+      color: #fff;
+      background: #198754;
+      border-radius: 100%;
+      justify-content: center;
+      align-items: center;
+    }
+  
+    .fc-state-default {
+      background-color: #198754;
+      background-image: -moz-linear-gradient(top, #fff, #e6e6e6);
+      background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#1d8856), to(#1b7d4f));
+      background-image: -webkit-linear-gradient(top, #1d8856, #1e724b);
+      background-image: -o-linear-gradient(top, #1d8856, #1e724b);
+      background-image: linear-gradient(to bottom, #1d8856, #1e724b);
+      background-repeat: repeat-x;
+      border-color: #1e724b #1e724b #1b7d4f;
+      color: #ffffff;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+  
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+  
+    .custom-button {
+      color: #262729;
+      font-size: 16px;
+      font-family: Inter;
+      font-weight: 700;
+      word-wrap: break-word;
+      border: none;
+      background: none;
+      cursor: pointer;
+      text-align: left;
+      padding: 0;
+    }
+  
+    .custom-button:hover {
+      text-decoration: underline;
+    }
+  
+    .activities-button {
+      color: #262729;
+    }
+  
+    .container-request {
+      width: 100%; /* Full width */
+      padding: 20px; /* Adjust padding as needed */
+      display: none; /* Initially hidden */
+    }
+  
+    .request-item {
+      margin-bottom: 20px; /* Adjust margin as needed */
+    }
+  
+    .header-text {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  
+    .title-text {
+      color: #101828;
+      font-size: 24px;
+      font-family: Inter;
+      font-weight: 500;
+      line-height: 28px;
+      word-wrap: break-word;
+    }
+  
+    .button-container {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px; /* Adjust margin as needed */
+    }
+  
+    .button-group {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+  
+    .request-button {
+      border-radius: 8px;
+      background:
+      white;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .request-button:hover {
+      background: #f1f1f1;
+    }
+
+    .request-text {
+      color: #344054;
+      font-size: 16px;
+      font-family: Inter;
+      font-weight: 500;
+      line-height: 19px;
+    }
+
+    .icon-shape {
+      width: 24px;
+      height: 24px;
+      background: #198754;
+      border-radius: 6px;
+    }
+
+    .header-row {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      background-color: #f1f1f1;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+
+    .table-header {
+      color: #344054;
+      font-size: 16px;
+      font-family: Inter;
+      font-weight: 500;
+      line-height: 19px;
+    }
+
+    .data-row {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      background-color: #ffffff;
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    .table-data {
+      color: #344054;
+      font-size: 14px;
+      font-family: Inter;
+      font-weight: 400;
+      line-height: 17px;
+    }
+
+  
+
+    .add-event-text {
+      color: #ffffff;
+    }
+
+    .selected {
+      color: #198754 !important;
+      font-weight: bold;
+    }
+  
+  </style>
+
+</body>
+</html>
