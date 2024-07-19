@@ -26,13 +26,13 @@
 
         <ul class="list-unstyled px-2">
             <li class="nav-item">
-                <a href="#" id="student-activities" class="text-decoration-none px-3 py-2 d-block">
+                <a href="\components\Student\Activities\activities.php" id="student-activities" class="text-decoration-none px-3 py-2 d-block">
                     <i class="bi bi-calendar-event"></i>
                     Student Activities
                 </a>
             </li>
             <li class="nav-item">
-                <a href="#student-organization" id="student-organization" class="text-decoration-none px-3 py-2 d-block">
+                <a href="\components\Student\Organization\college-list.php" id="student-organization" class="text-decoration-none px-3 py-2 d-block">
                     <i class="bi bi-people-fill"></i>
                     Student Organization
                 </a>

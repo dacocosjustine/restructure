@@ -1,5 +1,5 @@
 <head>
-    <link rel="stylesheet" href="..\assets\css\styles.css">
+    <link rel="stylesheet" href="\assets\css\styles.css">
     <!-- JS for jQuery -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
@@ -102,7 +102,7 @@
           var formData = new FormData($("#addEventForm")[0]);
           $.ajax({
             type: "POST",
-            url: "components/Student/Activities/add_event.php",
+            url: "/Activities/add_event.php",
             data: formData,
             contentType: false,
             processData: false,
@@ -125,7 +125,7 @@
       function display_events() {
         var events = [];
         $.ajax({
-          url: "/components/Student/Activities/display_event.php",
+          url: "../Activities/display_event.php",
           dataType: "json",
           success: function (response) {
             var result = response.data;

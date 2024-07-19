@@ -25,7 +25,7 @@ if ($result->num_rows > 0) {
 
         // Create a college item for each department
         echo '<li class="college-item">
-                <button class="college-button" type="button" onclick="window.location.href=\'../components/Student/Organization/college-details.php?id=' . $department_id . '\'">
+                <button class="college-button" type="button" onclick="window.location.href=\'../Organization/college-details.php?id=' . $department_id . '\'">
                     <div class="orange-bar"></div>
                     <div class="college-image">
                         <img src="data:image/jpeg;base64,' . base64_encode($logo) . '">
